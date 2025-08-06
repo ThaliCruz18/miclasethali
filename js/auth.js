@@ -41,7 +41,7 @@ async function login() {
   } else {
     alert("Sesión iniciada correctamente.");
     localStorage.setItem("token", data.session.access_token);
-    window.location.href = "dashboard.html"; // Asegúrate de que este archivo exista
+    window.location.href = "dashboard.html"; // Puedes cambiar esta redirección
   }
 }
 
