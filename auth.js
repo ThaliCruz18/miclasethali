@@ -1,6 +1,5 @@
 const SUPABASE_URL = "https://vxoxgnejysvdggswcvxo.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ4b3hnbmVqeXN2ZGdnc3djdnhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1MDQ5MzcsImV4cCI6MjA3MDA4MDkzN30.o4eKVi55Jc1O2nqJGtx2Bc4i3hnAddoMlPWSWtJnIK8";
-
 const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 function toggleForms() {
@@ -23,7 +22,7 @@ async function register() {
   if (error) {
     alert("Error: " + error.message);
   } else {
-    alert("Registro exitoso. Revisa tu correo para confirmar.");
+    alert("Registro exitoso.");
     toggleForms();
   }
 }
@@ -42,6 +41,7 @@ async function login() {
   } else {
     alert("Sesión iniciada.");
     localStorage.setItem("token", data.session.access_token);
-    window.location.href = "dashboard.html"; // Redirige al dashboard
+
+     window.location.href = "dashboard.html"; //Registro Estudiantes
   }
 }
