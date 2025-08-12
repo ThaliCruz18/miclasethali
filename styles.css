@@ -1,0 +1,131 @@
+/* styles.css */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+h1 {
+  font-weight: 700;
+  margin-bottom: 40px;
+  font-size: 2.8rem;
+  text-shadow: 1px 1px 6px rgba(0,0,0,0.3);
+  text-align: center;
+}
+
+#auth-container {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+  padding: 30px 40px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  width: 350px;
+  max-width: 90vw;
+  backdrop-filter: blur(8px);
+}
+
+#auth-container h2 {
+  margin-top: 0;
+  margin-bottom: 25px;
+  font-weight: 600;
+  font-size: 1.8rem;
+  color: #f0f0f0;
+  text-align: center;
+}
+
+input[type="email"],
+input[type="password"] {
+  width: 100%;
+  padding: 12px 15px;
+  margin-bottom: 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  outline: none;
+  transition: background-color 0.3s ease;
+  background: rgba(255,255,255,0.2);
+  color: #fff;
+}
+
+input[type="email"]::placeholder,
+input[type="password"]::placeholder {
+  color: #e0e0e0;
+  opacity: 0.8;
+}
+
+input[type="email"]:focus,
+input[type="password"]:focus {
+  background: rgba(255,255,255,0.35);
+}
+
+button {
+  width: 100%;
+  background-color: #6c63ff;
+  border: none;
+  padding: 14px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 10px;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  box-shadow: 0 4px 15px rgba(108, 99, 255, 0.6);
+}
+
+button:hover {
+  background-color: #574bff;
+  box-shadow: 0 6px 20px rgba(87, 75, 255, 0.8);
+}
+
+p {
+  text-align: center;
+  font-size: 0.9rem;
+  color: #ddd;
+  margin-top: 18px;
+}
+
+p a {
+  color: #a9a3ff;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.3s ease;
+  cursor: pointer;
+}
+
+p a:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
+/* Oculta y muestra los formularios con animación suave */
+#login-form,
+#register-form {
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+#login-form[style*="display:none"],
+#register-form[style*="display:none"] {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-20px);
+}
+
+#login-form:not([style*="display:none"]),
+#register-form:not([style*="display:none"]) {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
