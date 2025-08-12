@@ -1,131 +1,136 @@
-/* styles.css */
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
-
-* {
-  box-sizing: border-box;
+/* Fuente y base */
+body {
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(to right, #2c5364, #203a43, #0f2027);
+  color: #fff;
+  margin: 0;
+  padding: 0;
 }
 
-body {
-  margin: 0;
-  font-family: 'Inter', sans-serif;
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  color: #fff;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+.container {
+  max-width: 1000px;
+  margin: 30px auto;
   padding: 20px;
 }
 
-h1 {
-  font-weight: 700;
-  margin-bottom: 40px;
-  font-size: 2.8rem;
-  text-shadow: 1px 1px 6px rgba(0,0,0,0.3);
+/* Títulos */
+h1, h2 {
+  font-weight: 600;
   text-align: center;
+  margin-bottom: 15px;
 }
 
-#auth-container {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 15px;
-  padding: 30px 40px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-  width: 350px;
-  max-width: 90vw;
+h1 {
+  font-size: 2rem;
+}
+
+/* Botón de cerrar sesión */
+.cerrar-btn {
+  background: #ff4d4d;
+  color: #fff;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  float: right;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.cerrar-btn:hover {
+  background: #cc0000;
+}
+
+/* Tarjetas */
+.card {
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
   backdrop-filter: blur(8px);
 }
 
-#auth-container h2 {
-  margin-top: 0;
-  margin-bottom: 25px;
-  font-weight: 600;
-  font-size: 1.8rem;
-  color: #f0f0f0;
-  text-align: center;
+/* Inputs y botones */
+input, button, select {
+  width: 100%;
+  padding: 10px;
+  margin-top: 8px;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
 }
 
-input[type="email"],
-input[type="password"] {
-  width: 100%;
-  padding: 12px 15px;
-  margin-bottom: 20px;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  outline: none;
-  transition: background-color 0.3s ease;
-  background: rgba(255,255,255,0.2);
+input {
+  background: rgba(255, 255, 255, 0.15);
   color: #fff;
 }
 
-input[type="email"]::placeholder,
-input[type="password"]::placeholder {
-  color: #e0e0e0;
-  opacity: 0.8;
-}
-
-input[type="email"]:focus,
-input[type="password"]:focus {
-  background: rgba(255,255,255,0.35);
+input::placeholder {
+  color: #ddd;
 }
 
 button {
-  width: 100%;
-  background-color: #6c63ff;
-  border: none;
-  padding: 14px;
-  font-size: 1.1rem;
-  font-weight: 600;
-  border-radius: 10px;
-  color: white;
+  background: #4CAF50;
+  color: #fff;
+  font-weight: bold;
   cursor: pointer;
-  transition: background-color 0.3s ease;
-  box-shadow: 0 4px 15px rgba(108, 99, 255, 0.6);
+  transition: 0.3s;
 }
 
 button:hover {
-  background-color: #574bff;
-  box-shadow: 0 6px 20px rgba(87, 75, 255, 0.8);
+  background: #45a049;
 }
 
-p {
-  text-align: center;
-  font-size: 0.9rem;
-  color: #ddd;
-  margin-top: 18px;
+/* Tabla de estudiantes */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
 }
 
-p a {
-  color: #a9a3ff;
+th, td {
+  padding: 12px;
+  text-align: left;
+}
+
+th {
+  background: rgba(0,0,0,0.3);
   font-weight: 600;
-  text-decoration: none;
-  transition: color 0.3s ease;
-  cursor: pointer;
 }
 
-p a:hover {
-  color: #fff;
-  text-decoration: underline;
+tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.05);
 }
 
-/* Oculta y muestra los formularios con animación suave */
-#login-form,
-#register-form {
-  transition: opacity 0.4s ease, transform 0.4s ease;
+/* Botones en tabla */
+.table-btn {
+  padding: 6px 10px;
+  font-size: 0.9rem;
+  border-radius: 4px;
+  margin: 0 2px;
 }
 
-#login-form[style*="display:none"],
-#register-form[style*="display:none"] {
-  opacity: 0;
-  pointer-events: none;
-  transform: translateY(-20px);
+.edit-btn {
+  background: #2196F3;
 }
 
-#login-form:not([style*="display:none"]),
-#register-form:not([style*="display:none"]) {
-  opacity: 1;
-  pointer-events: auto;
-  transform: translateY(0);
+.edit-btn:hover {
+  background: #1976D2;
+}
+
+.delete-btn {
+  background: #f44336;
+}
+
+.delete-btn:hover {
+  background: #d32f2f;
+}
+
+/* Archivos */
+#lista-archivos img {
+  border-radius: 5px;
+  margin-top: 5px;
 }

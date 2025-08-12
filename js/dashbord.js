@@ -1,270 +1,298 @@
 const SUPABASE_URL = "https://vxoxgnejysvdggswcvxo.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ4b3hnbmVqeXN2ZGdnc3djdnhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1MDQ5MzcsImV4cCI6MjA3MDA4MDkzN30.o4eKVi55Jc1O2nqJGtx2Bc4i3hnAddoMlPWSWtJnIK8";
 
-let estudiantesData = []; // Variable global para guardar la lista de estudiantes
+const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// ----------------- AGREGAR ESTUDIANTE -----------------
 async function agregarEstudiante() {
-    const nombre = document.getElementById("nombre").value.trim();
-    const correo = document.getElementById("correo").value.trim();
-    const clase = document.getElementById("clase").value.trim();
+  const nombre = document.getElementById("nombre").value.trim();
+  const correo = document.getElementById("correo").value.trim();
+  const clase = document.getElementById("clase").value.trim();
 
-    if (!nombre || !correo || !clase) {
-        alert("Todos los campos son obligatorios.");
-        return;
-    }
+  if (!nombre || !correo || !clase) {
+    alert("Por favor llena todos los campos.");
+    return;
+  }
 
-    const { data: { user }, error: userError } = await client.auth.getUser();
-    if (userError || !user) {
-        alert("No estás autenticado.");
-        return;
-    }
+  const { data: { user }, error: userError } = await client.auth.getUser();
+  if (userError || !user) {
+    alert("No estás autenticado.");
+    return;
+  }
 
-    const { error } = await client.from("estudiantes").insert({
-        nombre,
-        correo,
-        clase,
-        user_id: user.id,
-    });
+  const { error } = await client.from("estudiantes").insert({
+    nombre,
+    correo,
+    clase,
+    user_id: user.id,
+  });
 
-    if (error) {
-        alert("Error al agregar: " + error.message);
-    } else {
-        alert("Estudiante agregado");
-        document.getElementById("nombre").value = "";
-        document.getElementById("correo").value = "";
-        document.getElementById("clase").value = "";
-        await cargarEstudiantes();
-    }
+  if (error) {
+    alert("Error al agregar: " + error.message);
+  } else {
+    alert("Estudiante agregado");
+    cargarEstudiantes();
+    limpiarFormulario();
+  }
 }
 
-// ----------------- CARGAR ESTUDIANTES -----------------
+function limpiarFormulario() {
+  document.getElementById("nombre").value = "";
+  document.getElementById("correo").value = "";
+  document.getElementById("clase").value = "";
+  const archivoInput = document.getElementById("archivo");
+  if (archivoInput) archivoInput.value = "";
+}
+
 async function cargarEstudiantes() {
-    const { data, error } = await client
-        .from("estudiantes")
-        .select("*")
-        .order("created_at", { ascending: false });
+  const { data: { user }, error: userError } = await client.auth.getUser();
+  if (userError || !user) {
+    alert("No estás autenticado.");
+    return;
+  }
 
-    if (error) {
-        alert("Error al cargar estudiantes: " + error.message);
-        return;
-    }
+  const { data, error } = await client
+    .from("estudiantes")
+    .select("*")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false });
 
-    estudiantesData = data || [];
-    const lista = document.getElementById("lista-estudiantes");
-    lista.innerHTML = "";
+  if (error) {
+    alert("Error al cargar estudiantes: " + error.message);
+    return;
+  }
 
-    const selectEstudiante = document.getElementById("estudiante");
-    selectEstudiante.innerHTML = "";
-    const opcionInicial = document.createElement("option");
-    opcionInicial.value = "";
-    opcionInicial.textContent = "Selecciona un estudiante";
-    selectEstudiante.appendChild(opcionInicial);
+  const lista = document.getElementById("lista-estudiantes");
+  lista.innerHTML = "";
 
-    estudiantesData.forEach((est) => {
-        const item = document.createElement("li");
-        item.innerHTML = `
-            <span>${est.nombre} (${est.clase})</span>
-            <div class="lista-botones">
-                <button class="btn-editar" onclick="abrirModalEdicion('${est.id}')">Editar</button>
-                <button class="btn-eliminar" onclick="eliminarEstudiante('${est.id}')">Eliminar</button>
-            </div>
-        `;
-        lista.appendChild(item);
+  data.forEach((est) => {
+    const item = document.createElement("li");
+    item.textContent = `${est.nombre} (${est.clase}) - ${est.correo}`;
 
-        const opcion = document.createElement("option");
-        opcion.value = est.id;
-        opcion.textContent = est.nombre;
-        selectEstudiante.appendChild(opcion);
-    });
+    const btnEditar = document.createElement("button");
+    btnEditar.textContent = "Editar";
+    btnEditar.onclick = () => mostrarEditar(est.id, est.nombre, est.correo, est.clase);
+
+    const btnEliminar = document.createElement("button");
+    btnEliminar.textContent = "Eliminar";
+    btnEliminar.onclick = () => eliminarEstudiante(est.id);
+
+    item.appendChild(document.createTextNode(" "));
+    item.appendChild(btnEditar);
+    item.appendChild(document.createTextNode(" "));
+    item.appendChild(btnEliminar);
+
+    lista.appendChild(item);
+  });
 }
 
-// ----------------- MODAL DE EDICIÓN -----------------
-function abrirModalEdicion(id) {
-    const estudiante = estudiantesData.find(est => String(est.id) === String(id));
-    if (!estudiante) {
-        alert(`Estudiante no encontrado. ID buscado: ${id}`);
-        return;
-    }
-    document.getElementById("edit-id").value = estudiante.id;
-    document.getElementById("edit-nombre").value = estudiante.nombre;
-    document.getElementById("edit-correo").value = estudiante.correo;
-    document.getElementById("edit-clase").value = estudiante.clase;
-    document.getElementById("modal-editar").style.display = "block";
+function mostrarEditar(id, nombre, correo, clase) {
+  document.getElementById("nombre").value = nombre;
+  document.getElementById("correo").value = correo;
+  document.getElementById("clase").value = clase;
+
+  document.getElementById("btnAgregar").style.display = "none";
+
+  const btnEditar = document.getElementById("btnEditar");
+  btnEditar.style.display = "inline";
+  btnEditar.setAttribute("data-id", id);
+
+  document.getElementById("btnCancelarEdicion").style.display = "inline";
+
+  document.getElementById("form-title").textContent = "Editar estudiante";
 }
 
-function cerrarModal() {
-    document.getElementById("modal-editar").style.display = "none";
+async function editarEstudiante() {
+  const btnEditar = document.getElementById("btnEditar");
+  const id = btnEditar.getAttribute("data-id");
+
+  if (!id) {
+    alert("No hay estudiante seleccionado para editar.");
+    return;
+  }
+
+  const nuevoNombre = document.getElementById("nombre").value.trim();
+  const nuevoCorreo = document.getElementById("correo").value.trim();
+  const nuevaClase = document.getElementById("clase").value.trim();
+
+  if (!nuevoNombre || !nuevoCorreo || !nuevaClase) {
+    alert("Por favor llena todos los campos.");
+    return;
+  }
+
+  const { data: { user }, error: userError } = await client.auth.getUser();
+  if (userError || !user) {
+    alert("No estás autenticado.");
+    return;
+  }
+
+  const { error } = await client
+    .from("estudiantes")
+    .update({
+      nombre: nuevoNombre,
+      correo: nuevoCorreo,
+      clase: nuevaClase,
+    })
+    .eq("id", id)
+    .eq("user_id", user.id);
+
+  if (error) {
+    alert("Error al editar: " + error.message);
+  } else {
+    alert("Estudiante editado correctamente");
+    cargarEstudiantes();
+    limpiarFormulario();
+
+    btnEditar.style.display = "none";
+    document.getElementById("btnAgregar").style.display = "inline";
+    document.getElementById("btnCancelarEdicion").style.display = "none";
+    document.getElementById("form-title").textContent = "Registrar estudiante";
+    btnEditar.removeAttribute("data-id");
+  }
 }
 
-window.onclick = function(event) {
-    const modal = document.getElementById("modal-editar");
-    if (event.target === modal) {
-        modal.style.display = "none";
-    }
-}
-
-// ----------------- GUARDAR EDICIÓN -----------------
-document.getElementById("form-editar").addEventListener("submit", async function(event) {
-    event.preventDefault();
-
-    const id = document.getElementById("edit-id").value;
-    const nuevoNombre = document.getElementById("edit-nombre").value.trim();
-    const nuevoCorreo = document.getElementById("edit-correo").value.trim();
-    const nuevaClase = document.getElementById("edit-clase").value.trim();
-
-    if (!nuevoNombre || !nuevoCorreo || !nuevaClase) {
-        alert("Todos los campos son obligatorios.");
-        return;
-    }
-
-    const { error } = await client
-        .from("estudiantes")
-        .update({ nombre: nuevoNombre, correo: nuevoCorreo, clase: nuevaClase })
-        .eq("id", id);
-
-    if (error) {
-        alert("Error al editar: " + error.message);
-    } else {
-        alert("Estudiante actualizado");
-        cerrarModal();
-        await cargarEstudiantes();
-    }
-});
-
-// ----------------- ELIMINAR ESTUDIANTE -----------------
 async function eliminarEstudiante(id) {
-    if (!confirm("¿Seguro que quieres eliminar este estudiante?")) return;
+  if (!confirm("¿Seguro que quieres eliminar este estudiante?")) return;
 
-    const { error } = await client
-        .from("estudiantes")
-        .delete()
-        .eq("id", id);
+  const { data: { user }, error: userError } = await client.auth.getUser();
+  if (userError || !user) {
+    alert("No estás autenticado.");
+    return;
+  }
 
-    if (error) {
-        alert("Error al eliminar: " + error.message);
-    } else {
-        alert("Estudiante eliminado");
-        await cargarEstudiantes();
-        await listarArchivos();
-    }
+  const { error } = await client
+    .from("estudiantes")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", user.id);
+
+  if (error) {
+    alert("Error al eliminar: " + error.message);
+  } else {
+    alert("Estudiante eliminado");
+    cargarEstudiantes();
+  }
 }
 
-// ----------------- SUBIR ARCHIVO -----------------
+function mostrarBotonCancelar() {
+  document.getElementById("cancelarBtn").style.display = "inline";
+}
+
+function cancelarCarga() {
+  const archivoInput = document.getElementById("archivo");
+  archivoInput.value = "";
+  document.getElementById("cancelarBtn").style.display = "none";
+}
+
+// CORRECCIÓN PRINCIPAL: Función subirArchivo corregida
 async function subirArchivo() {
-    const archivoInput = document.getElementById("archivo");
-    const archivo = archivoInput.files[0];
-    const idEstudiante = document.getElementById("estudiante").value;
+  const archivoInput = document.getElementById("archivo");
+  const archivo = archivoInput.files[0];
+  
+  if (!archivo) {
+    alert("Selecciona un archivo primero.");
+    return;
+  }
 
-    if (!archivo || !idEstudiante) {
-        alert("Selecciona un estudiante y un archivo primero.");
-        return;
-    }
+  const { data: { user }, error: userError } = await client.auth.getUser();
+  if (userError || !user) {
+    alert("Sesión no válida.");
+    return;
+  }
 
-    const { data: { user }, error: userError } = await client.auth.getUser();
-    if (userError || !user) {
-        alert("Sesión no válida.");
-        return;
-    }
-
-    const nombreRuta = `${user.id}/${idEstudiante}/${archivo.name}`;
-    const { error } = await client.storage
-        .from("tareas")
-        .upload(nombreRuta, archivo, {
-            cacheControl: "3600",
-            upsert: false,
-        });
-
-    if (error) {
-        alert("Error al subir: " + error.message);
-    } else {
-        alert("Archivo subido correctamente.");
-        await listarArchivos();
-    }
+  // Añadimos timestamp para evitar colisiones de nombres
+  const nombreRuta = `${user.id}/${Date.now()}_${archivo.name}`;
+  
+  const { error } = await client.storage
+    .from("tareas")
+    .upload(nombreRuta, archivo, { cacheControl: "3600", upsert: false });
+  
+  if (error) {
+    alert("Error al subir archivo: " + error.message);
+  } else {
+    alert("Archivo subido correctamente.");
+    archivoInput.value = "";
+    listarArchivos();
+  }
 }
 
-// ----------------- LISTAR ARCHIVOS -----------------
 async function listarArchivos() {
-    const { data: { user }, error: userError } = await client.auth.getUser();
-    if (userError || !user) {
-        alert("Sesión no válida.");
-        return;
+  const { data: { user }, error: userError } = await client.auth.getUser();
+  if (userError || !user) {
+    alert("Sesión no válida.");
+    return;
+  }
+
+  const { data, error } = await client.storage
+    .from("tareas")
+    .list(user.id, { limit: 100, offset: 0 });
+
+  const lista = document.getElementById("lista-archivos");
+  lista.innerHTML = "";
+
+  if (error) {
+    lista.innerHTML = "<li>Error al listar archivos</li>";
+    return;
+  }
+
+  for (const archivo of data) {
+    const { data: signedUrlData, error: signedUrlError } = await client.storage
+      .from("tareas")
+      .createSignedUrl(`${user.id}/${archivo.name}`, 60);
+
+    if (signedUrlError) {
+      console.error("Error al generar URL firmada:", signedUrlError.message);
+      continue;
     }
 
-    const lista = document.getElementById("lista-archivos");
-    lista.innerHTML = "";
+    const publicUrl = signedUrlData.signedUrl;
 
-    const { data, error } = await client.storage
-        .from("tareas")
-        .list(`${user.id}`, { limit: 100 });
+    const item = document.createElement("li");
 
-    if (error) {
-        lista.innerHTML = "<li>Error al listar archivos</li>";
-        return;
-    }
+    const esImagen = archivo.name.match(/\.(jpg|jpeg|png|gif)$/i);
+    const esPDF = archivo.name.match(/\.pdf$/i);
 
-    if (!data.length) {
-        lista.innerHTML = "<li>No hay archivos subidos.</li>";
-        return;
-    }
-
-    for (const estudianteFolder of data) {
-        if (estudianteFolder.id) {
-            const { data: archivosEstudiante, error: archivosError } = await client.storage
-                .from("tareas")
-                .list(`${user.id}/${estudianteFolder.id}`, { limit: 100 });
-
-            if (archivosError) continue;
-
-            const nombreEstudiante = (estudiantesData.find(est => String(est.id) === String(estudianteFolder.id)) || {}).nombre || `Estudiante ${estudianteFolder.id}`;
-
-            archivosEstudiante.forEach(async (archivo) => {
-                const { data: signedUrlData } = await client.storage
-                    .from("tareas")
-                    .createSignedUrl(`${user.id}/${estudianteFolder.id}/${archivo.name}`, 60);
-
-                const publicUrl = signedUrlData.signedUrl;
-                const item = document.createElement("li");
-
-                item.innerHTML = `
-                    <span><strong>${nombreEstudiante}:</strong> ${archivo.name}</span>
-                    <div class="lista-botones">
-                        <a href="${publicUrl}" target="_blank" class="btn-ver">Ver</a>
-                        <button class="btn-eliminar" onclick="eliminarArchivo('${user.id}/${estudianteFolder.id}/${archivo.name}')">Eliminar</button>
-                    </div>
-                `;
-                lista.appendChild(item);
-            });
-        }
-    }
-}
-
-// ----------------- ELIMINAR ARCHIVO -----------------
-async function eliminarArchivo(nombreArchivo) {
-    if (!confirm("¿Seguro que quieres eliminar este archivo?")) return;
-    const { error } = await client.storage.from("tareas").remove([nombreArchivo]);
-    if (error) {
-        alert("Error al eliminar el archivo: " + error.message);
+    if (esImagen) {
+      item.innerHTML = `
+        <strong>${archivo.name}</strong><br>
+        <a href="${publicUrl}" target="_blank">
+          <img src="${publicUrl}" width="150" style="border:1px solid #ccc; margin:5px;" />
+        </a>
+      `;
+    } else if (esPDF) {
+      item.innerHTML = `
+        <strong>${archivo.name}</strong><br>
+        <a href="${publicUrl}" target="_blank">Ver PDF</a>
+      `;
     } else {
-        alert("Archivo eliminado.");
-        await listarArchivos();
+      item.innerHTML = `<a href="${publicUrl}" target="_blank">${archivo.name}</a>`;
     }
+
+    lista.appendChild(item);
+  }
 }
 
-// ----------------- CERRAR SESIÓN -----------------
 async function cerrarSesion() {
-    const { error } = await client.auth.signOut();
-    if (error) {
-        alert("Error al cerrar sesión: " + error.message);
-    } else {
-        localStorage.clear();
-        alert("Sesión cerrada.");
-        window.location.href = "index.html";
-    }
+  const { error } = await client.auth.signOut();
+  if (error) {
+    alert("Error al cerrar sesión: " + error.message);
+  } else {
+    alert("Sesión cerrada.");
+    window.location.href = "index.html";
+  }
 }
 
-// Cargar estudiantes y archivos al inicio
-document.addEventListener("DOMContentLoaded", async () => {
-    await cargarEstudiantes();
-    await listarArchivos();
+// Eventos
+document.getElementById("btnAgregar").addEventListener("click", agregarEstudiante);
+document.getElementById("btnEditar").addEventListener("click", editarEstudiante);
+document.getElementById("btnCancelarEdicion").addEventListener("click", () => {
+  limpiarFormulario();
+  document.getElementById("form-title").textContent = "Registrar estudiante";
+  document.getElementById("btnAgregar").style.display = "inline";
+  document.getElementById("btnEditar").style.display = "none";
+  document.getElementById("btnCancelarEdicion").style.display = "none";
+  document.getElementById("btnEditar").removeAttribute("data-id");
 });
+
+// Carga inicial
+cargarEstudiantes();
+listarArchivos();
